@@ -1,0 +1,33 @@
+name: Scrape Game Dev Jobs
+ 
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch:          # manual run button in GitHub UI
+ 
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+ 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+ 
+      - name: Install dependencies
+        run: pip install requests supabase
+ 
+      - name: Run scraper
+        run: python scraper.py
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+ 
+      - name: Log completion
+        run: echo "Scrape completed at $(date -u)"
