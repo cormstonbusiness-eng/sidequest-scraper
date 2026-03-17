@@ -1,33 +1,39 @@
 name: Scrape Game Dev Jobs
- 
+
 on:
   schedule:
-    - cron: '0 */6 * * *'   # every 6 hours
-  workflow_dispatch:          # manual run button in GitHub UI
- 
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 15
- 
+
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
- 
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
- 
+
       - name: Install dependencies
         run: pip install requests supabase
- 
+
       - name: Run scraper
         run: python scraper.py
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
- 
-      - name: Log completion
-        run: echo "Scrape completed at $(date -u)"
+
+      - name: Keep repo active
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          echo "Last run: $(date -u)" > last_run.txt
+          git add last_run.txt
+          git commit -m "chore: update last run timestamp" || echo "Nothing to commit"
+          git push
